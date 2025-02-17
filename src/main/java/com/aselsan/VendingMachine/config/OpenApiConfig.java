@@ -1,4 +1,4 @@
-package com.aselsan.VendingMachine.config;
+package com.aselsan.VendingMachine.Config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;

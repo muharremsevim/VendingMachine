@@ -1,6 +1,7 @@
 package com.aselsan.VendingMachine.Controller;
 
-import com.aselsan.VendingMachine.Domain.Product;
+import com.aselsan.VendingMachine.Application.Dto.ProductDto;
+import com.aselsan.VendingMachine.Application.Service.VendingMachineService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -14,17 +15,23 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/vending-machine")
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 @Tag(name = "Vending Machine", description = "Vending Machine management APIs")
 public class VendingMachineController {
+    private final VendingMachineService vendingMachineService;
+
+    public VendingMachineController(VendingMachineService vendingMachineService) {
+        this.vendingMachineService = vendingMachineService;
+    }
 
     @Operation(
             summary = "Query available items",
             description = "Returns a list of all available items in the vending machine"
     )
-    @GetMapping("/items")
-    public ResponseEntity<List<Product>> queryItems() {
-        return ResponseEntity.ok(List.of());
+    @GetMapping("/{id}/items")
+    public ResponseEntity<List<ProductDto>> queryItems(
+            @Parameter(description = "Vending machine ID") @PathVariable Long id) {
+        return ResponseEntity.ok(vendingMachineService.retrieveItems(id));
     }
 
     @Operation(
@@ -32,7 +39,7 @@ public class VendingMachineController {
             description = "Returns details of a specific item"
     )
     @GetMapping("/item/{id}")
-    public ResponseEntity<Product> getItem(
+    public ResponseEntity<ProductDto> getItem(
             @Parameter(description = "Item ID") @PathVariable String id) {
         return ResponseEntity.ok(null);
     }

@@ -1,4 +1,4 @@
-package com.aselsan.VendingMachine.config;
+package com.aselsan.VendingMachine.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
