@@ -6,6 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {ProductMapper.class})
 public interface VendingMachineMapper {
@@ -15,7 +16,20 @@ public interface VendingMachineMapper {
 
     VendingMachine toEntity(VendingMachineDto vendingMachineDto);
 
-    List<VendingMachineDto> toDTOList(List<VendingMachine> vendingMachineList);
+    // Prevent returning vending machines together with products
+    default List<VendingMachineDto> toDtoList(List<VendingMachine> machines) {
+        if (machines == null) {
+            return null;
+        }
+        return machines.stream()
+                .map(machine -> VendingMachineDto.builder()
+                        .id(machine.getId())
+                        .serialNumber(machine.getSerialNumber())
+                        .status(machine.getStatus())
+                        .currentBalance(machine.getCurrentBalance())
+                        .build())
+                .collect(Collectors.toList());
+    }
 
     List<VendingMachine> toEntityList(List<VendingMachineDto> vendingMachineDtoList);
 }

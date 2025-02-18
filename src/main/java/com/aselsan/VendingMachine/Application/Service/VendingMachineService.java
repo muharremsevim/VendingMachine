@@ -7,6 +7,11 @@ import com.aselsan.VendingMachine.Domain.Model.Money;
 import java.util.List;
 
 public interface VendingMachineService {
+
+    VendingMachineDto getMachine(Long id);
+
+    List<VendingMachineDto> getAllMachines();
+
     VendingMachineDto createMachine(VendingMachineDto vendingMachineDto);
 
     Double insertMoney(Long machineId, Money money);

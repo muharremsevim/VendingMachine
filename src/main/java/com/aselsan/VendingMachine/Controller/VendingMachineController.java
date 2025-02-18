@@ -1,13 +1,13 @@
 package com.aselsan.VendingMachine.Controller;
 
 import com.aselsan.VendingMachine.Application.Dto.ProductDto;
+import com.aselsan.VendingMachine.Application.Dto.VendingMachineDto;
 import com.aselsan.VendingMachine.Application.Service.VendingMachineService;
 import com.aselsan.VendingMachine.Domain.Model.Money;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -59,7 +59,24 @@ public class VendingMachineController {
     public CompletableFuture<ResponseEntity<Double>> insertMoney(
             @Parameter(description = "Vending machine ID") @PathVariable Long machineId,
             @Parameter(description = "Money denomination") @RequestParam Money money) {
-        return CompletableFuture.supplyAsync(() ->  ResponseEntity.ok(vendingMachineService.insertMoney(machineId, money)));
+        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(vendingMachineService.insertMoney(machineId, money)));
+    }
+
+    @Async
+    @GetMapping("/{machineId}")
+    @Operation(summary = "Get a vending machine by ID")
+    public CompletableFuture<ResponseEntity<VendingMachineDto>> getMachine(
+            @Parameter(description = "Vending machine ID") @PathVariable Long machineId) {
+        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(vendingMachineService.getMachine(machineId)));
+    }
+
+    @Async
+    @GetMapping
+    @Operation(
+            summary = "Get all vending machines",
+            description = "Vending machines return without their products")
+    public CompletableFuture<ResponseEntity<List<VendingMachineDto>>> getAllMachines() {
+        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(vendingMachineService.getAllMachines()));
     }
 
     @Async
@@ -67,10 +84,14 @@ public class VendingMachineController {
             summary = "Purchase item",
             description = "Purchase and retrieve an item from the vending machine"
     )
-    @PostMapping("/purchase/{id}")
+    @PostMapping("{machineId}/purchase/{id}")
     public CompletableFuture<ResponseEntity<Void>> retrieveItem(
-            @Parameter(description = "Item ID") @PathVariable String id,
-            @Parameter(description = "Payment details") @RequestBody Object paymentDetails) {
+            @Parameter(description = "Vending machine ID")
+            @PathVariable Long machineId,
+            @Parameter(description = "Item ID")
+            @PathVariable String id,
+            @Parameter(description = "Payment details")
+            @RequestBody Object paymentDetails) {
         return CompletableFuture.supplyAsync(() -> ResponseEntity.ok().build());
     }
 
@@ -97,6 +118,6 @@ public class VendingMachineController {
     @PreAuthorize("hasRole('ADMIN')")
     public CompletableFuture<ResponseEntity<Void>> doMaintenance(
             @Parameter(description = "Maintenance details") @RequestBody Object maintenanceDetails) {
-        return CompletableFuture.supplyAsync( () -> ResponseEntity.ok().build());
+        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok().build());
     }
 } 

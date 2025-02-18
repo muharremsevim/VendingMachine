@@ -24,6 +24,18 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     private final VendingMachineMapper vendingMachineMapper;
 
     @Override
+    public VendingMachineDto getMachine(Long id) {
+        VendingMachine machine = vendingMachineStore.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Vending machine not found"));
+        return vendingMachineMapper.toDto(machine);
+    }
+
+    @Override
+    public List<VendingMachineDto> getAllMachines() {
+        return vendingMachineMapper.toDtoList(vendingMachineStore.findAll());
+    }
+
+    @Override
     public VendingMachineDto createMachine(VendingMachineDto vendingMachineDto) {
         VendingMachine machine = VendingMachine.createNew(vendingMachineDto.getSerialNumber());
         return vendingMachineMapper.toDto(vendingMachineStore.store(machine));
