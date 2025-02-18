@@ -11,4 +11,6 @@ public interface VendingMachineStore {
     List<VendingMachine> findAll();
 
     VendingMachine store(VendingMachine vendingMachine);
+
+    Optional<VendingMachine> findBySerialNumber(String serialNumber);
 }

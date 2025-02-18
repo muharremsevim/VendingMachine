@@ -30,12 +30,13 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     }
 
     @Override
-    public void insertMoney(Long machineId, Money money) {
+    public Double insertMoney(Long machineId, Money money) {
         VendingMachine machine = vendingMachineStore.findById(machineId)
                 .orElseThrow(() -> new IllegalArgumentException("Vending machine not found"));
 
         machine.insertMoney(money);
         vendingMachineStore.store(machine);
+        return machine.getCurrentBalance();
     }
 
     @Override
@@ -66,5 +67,13 @@ public class VendingMachineServiceImpl implements VendingMachineService {
 
         List<Product> products = machine.getProducts();
         return productMapper.toDtoList(products);
+    }
+
+    @Override
+    public ProductDto retrieveItem(Long machineId, Long productId) {
+        VendingMachine machine = vendingMachineStore.findById(machineId)
+                .orElseThrow(() -> new IllegalArgumentException("Vending machine not found"));
+
+        return productMapper.toDto(machine.getProduct(productId));
     }
 }

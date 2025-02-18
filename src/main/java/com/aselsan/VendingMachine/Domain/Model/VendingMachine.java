@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+//@NoArgsConstructor
+//@AllArgsConstructor
 @Builder
 @AggregateRoot(description = "Represents a vending machine that manages products and transactions")
 public class VendingMachine {
@@ -36,13 +36,17 @@ public class VendingMachine {
         currentBalance += money.getValue();
     }
 
-    public Product dispenseProduct(Long productId) {
-        validateOperational();
-
-        Product product = products.stream()
+    public Product getProduct(Long productId) {
+        return products.stream()
                 .filter(p -> p.getId().equals(productId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+    }
+
+    public Product dispenseProduct(Long productId) {
+        validateOperational();
+
+        Product product = getProduct(productId);
 
         if (!product.isAvailable()) {
             throw new IllegalStateException("Product is not available");

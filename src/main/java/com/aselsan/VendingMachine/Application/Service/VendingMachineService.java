@@ -9,11 +9,13 @@ import java.util.List;
 public interface VendingMachineService {
     VendingMachineDto createMachine(VendingMachineDto vendingMachineDto);
 
-    void insertMoney(Long machineId, Money money);
+    Double insertMoney(Long machineId, Money money);
 
     ProductDto dispenseProduct(Long machineId, Long productId);
 
     Double refund(Long machineId);
 
     List<ProductDto> retrieveItems(Long id);
+
+    ProductDto retrieveItem(Long machineId, Long productId);
 }
