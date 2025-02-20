@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 
 @RestController
 @RequestMapping("/api/v1/vending-machine")
@@ -27,6 +28,17 @@ public class VendingMachineController {
         this.vendingMachineService = vendingMachineService;
     }
 
+    // First retrieve all vending machines without their products
+    @Async
+    @GetMapping("/all")
+    @Operation(
+            summary = "Get all vending machines",
+            description = "Vending machines return without their products")
+    public CompletableFuture<ResponseEntity<List<VendingMachineDto>>> getAllMachines() {
+        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(vendingMachineService.getAllMachines()));
+    }
+
+    // Retrieve all products in a given vending machine, see names and prices of the products
     @Async
     @Operation(
             summary = "Query available items",
@@ -39,20 +51,7 @@ public class VendingMachineController {
         return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(vendingMachineService.retrieveItems(machineId)));
     }
 
-    @Async
-    @Operation(
-            summary = "Get item details",
-            description = "Returns details of a specific item"
-    )
-    @GetMapping("{machineId}/item/{productId}")
-    public CompletableFuture<ResponseEntity<ProductDto>> getItem(
-            @Parameter(description = "Vending machine Id", required = true)
-            @PathVariable Long machineId,
-            @Parameter(description = "Item Id", required = true)
-            @PathVariable Long productId) {
-        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(vendingMachineService.retrieveItem(machineId, productId)));
-    }
-
+    // Insert necessary amount to the vending machine
     @Async
     @PostMapping("/{machineId}/insert-money")
     @Operation(summary = "Insert money into the vending machine")
@@ -62,62 +61,69 @@ public class VendingMachineController {
         return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(vendingMachineService.insertMoney(machineId, money)));
     }
 
+    // After inserting money into the vending machine, get the product, if amount is sufficient
+    @Async
+    @Operation(
+            summary = "Dispense a specific item",
+            description = "Returns the specific item, if the balance is sufficient"
+    )
+    @PostMapping("{machineId}/purchase/{productId}")
+    public CompletableFuture<ResponseEntity<ProductDto>> purchaseItem(
+            @Parameter(description = "Vending machine Id", required = true)
+            @PathVariable Long machineId,
+            @Parameter(description = "Item Id", required = true)
+            @PathVariable Long productId) {
+        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(vendingMachineService.dispenseProduct(machineId, productId)));
+    }
+
+    // Unlike queryItems, this methods returns information about vending machine together with its products
     @Async
     @GetMapping("/{machineId}")
-    @Operation(summary = "Get a vending machine by ID")
+    @Operation(summary = "Get a vending machine by Id")
     public CompletableFuture<ResponseEntity<VendingMachineDto>> getMachine(
-            @Parameter(description = "Vending machine ID") @PathVariable Long machineId) {
+            @Parameter(description = "Vending machine Id") @PathVariable Long machineId) {
         return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(vendingMachineService.getMachine(machineId)));
     }
 
-    @Async
-    @GetMapping
-    @Operation(
-            summary = "Get all vending machines",
-            description = "Vending machines return without their products")
-    public CompletableFuture<ResponseEntity<List<VendingMachineDto>>> getAllMachines() {
-        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(vendingMachineService.getAllMachines()));
-    }
-
-    @Async
-    @Operation(
-            summary = "Purchase item",
-            description = "Purchase and retrieve an item from the vending machine"
-    )
-    @PostMapping("{machineId}/purchase/{id}")
-    public CompletableFuture<ResponseEntity<Void>> retrieveItem(
-            @Parameter(description = "Vending machine ID")
-            @PathVariable Long machineId,
-            @Parameter(description = "Item ID")
-            @PathVariable String id,
-            @Parameter(description = "Payment details")
-            @RequestBody Object paymentDetails) {
-        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok().build());
-    }
-
+    // Only Admin user can add inventory to the given vending machine
     @Async
     @Operation(
             summary = "Install inventory",
             description = "Install or update inventory in the vending machine",
             security = @SecurityRequirement(name = "basicAuth")
     )
-    @PostMapping("/inventory/install")
+    @PostMapping("{machineId}/inventory/install")
     @PreAuthorize("hasRole('ADMIN')")
     public CompletableFuture<ResponseEntity<Void>> installInventory(
-            @Parameter(description = "Inventory details") @RequestBody Object inventoryDetails) {
-        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok().build());
+            @Parameter(description = "Vending machine Id", required = true)
+            @PathVariable Long machineId,
+            @Parameter(description = "Inventory details")
+            @RequestBody List<ProductDto> productList) {
+        return CompletableFuture.supplyAsync(() -> {
+            vendingMachineService.installInventory(machineId, productList);
+            return ResponseEntity.ok().build();
+        });
     }
 
+    // Only Admin user can de/activate vending machine
     @Async
     @Operation(
             summary = "Perform maintenance",
             description = "Perform maintenance operations on the vending machine",
             security = @SecurityRequirement(name = "basicAuth")
     )
-    @PostMapping("/maintenance")
+    @PostMapping("{machineId}/maintenance")
     @PreAuthorize("hasRole('ADMIN')")
     public CompletableFuture<ResponseEntity<Void>> doMaintenance(
-            @Parameter(description = "Maintenance details") @RequestBody Object maintenanceDetails) {
-        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok().build());
+            @Parameter(description = "Vending machine Id", required = true)
+            @PathVariable Long machineId,
+            @Parameter(description = "Maintenance details")
+            @RequestParam boolean isRunning) {
+//        SecurityContext context = SecurityContextHolder.getContext();
+        return CompletableFuture.supplyAsync(() -> {
+//            SecurityContextHolder.setContext(context);
+            vendingMachineService.updateMachineStatus(machineId, isRunning);
+            return ResponseEntity.ok().build();
+        }, Executors.newSingleThreadExecutor());
     }
 } 

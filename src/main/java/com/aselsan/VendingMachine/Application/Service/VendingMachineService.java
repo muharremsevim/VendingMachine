@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface VendingMachineService {
 
-    VendingMachineDto getMachine(Long id);
+    VendingMachineDto getMachine(Long machineId);
 
     List<VendingMachineDto> getAllMachines();
 
@@ -20,7 +20,11 @@ public interface VendingMachineService {
 
     Double refund(Long machineId);
 
-    List<ProductDto> retrieveItems(Long id);
+    List<ProductDto> retrieveItems(Long machineId);
 
     ProductDto retrieveItem(Long machineId, Long productId);
+
+    void updateMachineStatus(Long machineId, boolean isRunning);
+
+    void installInventory(Long machineId, List<ProductDto> productDtoList);
 }

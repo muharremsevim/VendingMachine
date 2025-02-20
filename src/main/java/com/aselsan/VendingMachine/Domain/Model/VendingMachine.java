@@ -1,6 +1,9 @@
 package com.aselsan.VendingMachine.Domain.Model;
 
 import com.aselsan.VendingMachine.Domain.Annotation.AggregateRoot;
+import com.aselsan.VendingMachine.Exception.BalanceNotEnoughException;
+import com.aselsan.VendingMachine.Exception.ProductNotFoundException;
+import com.aselsan.VendingMachine.Exception.VendingMachineOutOfOrderException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,11 +39,19 @@ public class VendingMachine {
         currentBalance += money.getValue();
     }
 
+    public void startMaintenance() {
+        status = VendingMachineStatus.OUT_OF_ORDER;
+    }
+
+    public void finishMaintenance() {
+        status = VendingMachineStatus.RUNNING;
+    }
+
     public Product getProduct(Long productId) {
         return products.stream()
                 .filter(p -> p.getId().equals(productId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                .orElseThrow(() -> new ProductNotFoundException("Product has unexpected errors"));
     }
 
     public Product dispenseProduct(Long productId) {
@@ -49,11 +60,11 @@ public class VendingMachine {
         Product product = getProduct(productId);
 
         if (!product.isAvailable()) {
-            throw new IllegalStateException("Product is not available");
+            throw new ProductNotFoundException("Product is not available");
         }
 
         if (currentBalance < product.getPrice()) {
-            throw new IllegalStateException("Insufficient balance");
+            throw new BalanceNotEnoughException("Insufficient balance");
         }
 
         currentBalance -= product.getPrice();
@@ -69,7 +80,7 @@ public class VendingMachine {
 
     private void validateOperational() {
         if (status != VendingMachineStatus.RUNNING) {
-            throw new IllegalStateException("Vending machine is not operational");
+            throw new VendingMachineOutOfOrderException(getId());
         }
     }
 }

@@ -9,6 +9,7 @@ import com.aselsan.VendingMachine.Domain.Model.Money;
 import com.aselsan.VendingMachine.Domain.Model.Product;
 import com.aselsan.VendingMachine.Domain.Model.VendingMachine;
 import com.aselsan.VendingMachine.Domain.Port.VendingMachineStore;
+import com.aselsan.VendingMachine.Exception.VendingMachineNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,9 +25,9 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     private final VendingMachineMapper vendingMachineMapper;
 
     @Override
-    public VendingMachineDto getMachine(Long id) {
-        VendingMachine machine = vendingMachineStore.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vending machine not found"));
+    public VendingMachineDto getMachine(Long machineId) {
+        VendingMachine machine = vendingMachineStore.findById(machineId)
+                .orElseThrow(() -> new VendingMachineNotFoundException(machineId));
         return vendingMachineMapper.toDto(machine);
     }
 
@@ -44,7 +45,7 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     @Override
     public Double insertMoney(Long machineId, Money money) {
         VendingMachine machine = vendingMachineStore.findById(machineId)
-                .orElseThrow(() -> new IllegalArgumentException("Vending machine not found"));
+                .orElseThrow(() -> new VendingMachineNotFoundException(machineId));
 
         machine.insertMoney(money);
         vendingMachineStore.store(machine);
@@ -54,7 +55,7 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     @Override
     public ProductDto dispenseProduct(Long machineId, Long productId) {
         VendingMachine machine = vendingMachineStore.findById(machineId)
-                .orElseThrow(() -> new IllegalArgumentException("Vending machine not found"));
+                .orElseThrow(() -> new VendingMachineNotFoundException(machineId));
 
         Product product = machine.dispenseProduct(productId);
         vendingMachineStore.store(machine);
@@ -64,7 +65,7 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     @Override
     public Double refund(Long machineId) {
         VendingMachine machine = vendingMachineStore.findById(machineId)
-                .orElseThrow(() -> new IllegalArgumentException("Vending machine not found"));
+                .orElseThrow(() -> new VendingMachineNotFoundException(machineId));
 
         Double refundAmount = machine.refund();
         vendingMachineStore.store(machine);
@@ -75,7 +76,7 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     @Override
     public List<ProductDto> retrieveItems(Long machineId) {
         VendingMachine machine = vendingMachineStore.findById(machineId)
-                .orElseThrow(() -> new IllegalArgumentException("Vending machine not found"));
+                .orElseThrow(() -> new VendingMachineNotFoundException(machineId));
 
         List<Product> products = machine.getProducts();
         return productMapper.toDtoList(products);
@@ -84,8 +85,35 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     @Override
     public ProductDto retrieveItem(Long machineId, Long productId) {
         VendingMachine machine = vendingMachineStore.findById(machineId)
-                .orElseThrow(() -> new IllegalArgumentException("Vending machine not found"));
+                .orElseThrow(() -> new VendingMachineNotFoundException(machineId));
 
         return productMapper.toDto(machine.getProduct(productId));
+    }
+
+    @Override
+    public void updateMachineStatus(Long machineId, boolean isRunning) {
+        VendingMachine machine = vendingMachineStore.findById(machineId)
+                .orElseThrow(() -> new VendingMachineNotFoundException(machineId));
+
+        if (isRunning) {
+            machine.finishMaintenance();
+        } else {
+            machine.startMaintenance();
+        }
+        vendingMachineStore.store(machine);
+    }
+
+    @Override
+    public void installInventory(Long machineId, List<ProductDto> productDtoList) {
+        VendingMachine machine = vendingMachineStore.findById(machineId)
+                .orElseThrow(() -> new VendingMachineNotFoundException(machineId));
+
+        machine.startMaintenance();
+        vendingMachineStore.store(machine);
+
+        machine.getProducts().addAll(productMapper.toEntityList(productDtoList));
+
+        machine.finishMaintenance();
+        vendingMachineStore.store(machine);
     }
 }
