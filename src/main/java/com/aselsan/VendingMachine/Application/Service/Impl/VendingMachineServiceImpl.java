@@ -5,12 +5,14 @@ import com.aselsan.VendingMachine.Application.Dto.VendingMachineDto;
 import com.aselsan.VendingMachine.Application.Mapper.ProductMapper;
 import com.aselsan.VendingMachine.Application.Mapper.VendingMachineMapper;
 import com.aselsan.VendingMachine.Application.Service.VendingMachineService;
+import com.aselsan.VendingMachine.Domain.Event.MoneyInsertedEvent;
 import com.aselsan.VendingMachine.Domain.Model.Money;
 import com.aselsan.VendingMachine.Domain.Model.Product;
 import com.aselsan.VendingMachine.Domain.Model.VendingMachine;
 import com.aselsan.VendingMachine.Domain.Port.VendingMachineStore;
 import com.aselsan.VendingMachine.Exception.VendingMachineNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     private final VendingMachineStore vendingMachineStore;
     private final ProductMapper productMapper;
     private final VendingMachineMapper vendingMachineMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public VendingMachineDto getMachine(Long machineId) {
@@ -47,9 +50,19 @@ public class VendingMachineServiceImpl implements VendingMachineService {
         VendingMachine machine = vendingMachineStore.findById(machineId)
                 .orElseThrow(() -> new VendingMachineNotFoundException(machineId));
 
-        machine.insertMoney(money);
+        eventPublisher.publishEvent(new MoneyInsertedEvent(this, machineId, money));
+
+        return machine.getCurrentBalance() + money.getValue();
+    }
+
+    @Override
+    @Transactional
+    public void updateBalance(Long machineId, Double amount) {
+        VendingMachine machine = vendingMachineStore.findById(machineId)
+                .orElseThrow(() -> new VendingMachineNotFoundException(machineId));
+
+        machine.insertMoney(Money.valueOf(amount));
         vendingMachineStore.store(machine);
-        return machine.getCurrentBalance();
     }
 
     @Override

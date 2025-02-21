@@ -19,4 +19,12 @@ public enum Money {
 
     private final Double value;
 
+    public static Money valueOf(Double amount) {
+        for (Money money : Money.values()) {
+            if (money.getValue().equals(amount)) {
+                return money;
+            }
+        }
+        throw new IllegalArgumentException("Invalid money amount: " + amount);
+    }
 }

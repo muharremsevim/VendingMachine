@@ -27,4 +27,6 @@ public interface VendingMachineService {
     void updateMachineStatus(Long machineId, boolean isRunning);
 
     void installInventory(Long machineId, List<ProductDto> productDtoList);
+
+    void updateBalance(Long machineId, Double amount);
 }
