@@ -38,8 +38,7 @@ class VendingMachineServiceImplTest {
         vendingMachineService = new VendingMachineServiceImpl(
                 vendingMachineStore,
                 null,
-                null,
-                eventPublisher
+                null
         );
     }
 
@@ -91,7 +90,6 @@ class VendingMachineServiceImplTest {
     void updateBalance_ShouldUpdateMachineBalance() {
         // Arrange
         Long machineId = 1L;
-        Double amount = 10.0;
         VendingMachine mockMachine = VendingMachine.builder()
                 .id(machineId)
                 .currentBalance(20.0)
@@ -102,7 +100,7 @@ class VendingMachineServiceImplTest {
         when(vendingMachineStore.store(any(VendingMachine.class))).thenReturn(mockMachine);
 
         // Act
-        vendingMachineService.updateBalance(machineId, amount);
+        vendingMachineService.insertMoney(machineId, Money.TEN);
 
         // Assert
         verify(vendingMachineStore).store(any(VendingMachine.class));
