@@ -37,8 +37,8 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     }
 
     @Override
-    public VendingMachineDto createMachine(VendingMachineDto vendingMachineDto) {
-        VendingMachine machine = VendingMachine.createNew(vendingMachineDto.getSerialNumber());
+    public VendingMachineDto createMachine(String serialNumber) {
+        VendingMachine machine = VendingMachine.createNew(serialNumber);
         return vendingMachineMapper.toDto(vendingMachineStore.store(machine));
     }
 

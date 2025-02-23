@@ -12,7 +12,7 @@ public interface VendingMachineService {
 
     List<VendingMachineDto> getAllMachines();
 
-    VendingMachineDto createMachine(VendingMachineDto vendingMachineDto);
+    VendingMachineDto createMachine(String serialNumber);
 
     Double insertMoney(Long machineId, Money money);
 

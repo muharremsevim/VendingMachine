@@ -133,6 +133,24 @@ public class VendingMachineController {
 
     // Only Admin user can add inventory to the given vending machine
     @Operation(
+            summary = "Create Vending Machine",
+            description = "Create a vending machine with given details",
+            security = @SecurityRequirement(name = "basicAuth")
+    )
+    @PostMapping("create-machine")
+    @PreAuthorize("hasRole('ADMIN')")
+    public CompletableFuture<ResponseEntity<Void>> createVendingMachine(
+            @Parameter(description = "Vending Machine details")
+            @RequestParam String serialNumber) {
+
+        return CompletableFuture.supplyAsync(() -> {
+            eventPublisher.publishEvent(new VendingMachineCreatedEvent(this, serialNumber));
+            return ResponseEntity.accepted().build();
+        }, Executors.newSingleThreadExecutor());
+    }
+
+    // Only Admin user can add inventory to the given vending machine
+    @Operation(
             summary = "Install inventory",
             description = "Install or update inventory in the vending machine",
             security = @SecurityRequirement(name = "basicAuth")
