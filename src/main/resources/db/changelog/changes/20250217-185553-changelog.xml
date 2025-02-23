@@ -38,5 +38,6 @@
     </changeSet>
     <changeSet author="sevim (generated)" id="1739818571985-3">
         <addForeignKeyConstraint baseColumnNames="vending_machine_id" baseTableName="product" constraintName="fkgeyrkw1dhbfyv3jpb9xu6ebbr" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="vending_machine" validate="true"/>
+        <addUniqueConstraint tableName="vending_machine" columnNames="serial_number" constraintName="uk_vending_machine_serial_number"/>
     </changeSet>
 </databaseChangeLog>

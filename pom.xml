@@ -200,10 +200,7 @@
 				<artifactId>liquibase-maven-plugin</artifactId>
 				<version>4.24.0</version>
 				<configuration>
-					<driver>org.postgresql.Driver</driver>
-					<url>jdbc:postgresql://localhost:5433/vending_machine</url>
-					<username>postgres</username>
-					<password>postgres</password>
+					<propertyFile>src/main/resources/liquibase.properties</propertyFile>
 					<changeLogFile>src/main/resources/db/changelog/db.changelog-master.xml</changeLogFile>
 					<outputChangeLogFile>src/main/resources/db/changelog/changes/${maven.build.timestamp}-changelog.xml</outputChangeLogFile>
 				</configuration>
