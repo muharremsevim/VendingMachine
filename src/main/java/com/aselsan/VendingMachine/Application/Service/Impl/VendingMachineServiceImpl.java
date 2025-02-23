@@ -107,6 +107,7 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     }
 
     @Override
+    @Transactional
     public void installInventory(Long machineId, List<ProductDto> productDtoList) {
         VendingMachine machine = vendingMachineStore.findById(machineId)
                 .orElseThrow(() -> new VendingMachineNotFoundException(machineId));

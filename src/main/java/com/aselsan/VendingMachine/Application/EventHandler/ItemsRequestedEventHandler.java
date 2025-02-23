@@ -12,13 +12,22 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @RequiredArgsConstructor
 public class ItemsRequestedEventHandler {
-    private final Logger logger = LoggerFactory.getLogger(AllVendingMachinesRequestedEventHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(ItemsRequestedEventHandler.class);
     private final VendingMachineService vendingMachineService;
     private final ApplicationEventPublisher eventPublisher;
+
+    private final Map<Long, CompletableFuture<List<ProductDto>>> responseFutures = new ConcurrentHashMap<>();
+
+    public void registerFuture(Long machineId, CompletableFuture<List<ProductDto>> future) {
+        responseFutures.put(machineId, future);
+    }
 
     @EventListener
     public void handleItemsRequested(ItemsRequestedEvent event) {
@@ -30,6 +39,14 @@ public class ItemsRequestedEventHandler {
                     event.getMachineId(),
                     e.getMessage());
             throw e;
+        }
+    }
+
+    @EventListener
+    public void handleItemsResponse(ItemsResponseEvent event) {
+        CompletableFuture<List<ProductDto>> future = responseFutures.remove(event.getMachineId());
+        if (future != null) {
+            future.complete(event.getItems());
         }
     }
 }

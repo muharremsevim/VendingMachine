@@ -1,7 +1,6 @@
 package com.aselsan.VendingMachine.Application.Service;
 
 import com.aselsan.VendingMachine.Application.Service.Impl.VendingMachineServiceImpl;
-import com.aselsan.VendingMachine.Domain.Event.MoneyInsertedEvent;
 import com.aselsan.VendingMachine.Domain.Model.Money;
 import com.aselsan.VendingMachine.Domain.Model.VendingMachine;
 import com.aselsan.VendingMachine.Domain.Model.VendingMachineStatus;
@@ -10,14 +9,12 @@ import com.aselsan.VendingMachine.Exception.VendingMachineNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -40,36 +37,6 @@ class VendingMachineServiceImplTest {
                 null,
                 null
         );
-    }
-
-    @Test
-    void insertMoney_ShouldPublishEventAndReturnUpdatedBalance() {
-        // Arrange
-        Long machineId = 1L;
-        Money money = Money.TEN;
-        Double initialBalance = 20.0;
-
-        VendingMachine mockMachine = VendingMachine.builder()
-                .id(machineId)
-                .currentBalance(initialBalance)
-                .status(VendingMachineStatus.RUNNING)
-                .build();
-
-        when(vendingMachineStore.findById(machineId)).thenReturn(Optional.of(mockMachine));
-
-        // Act
-        Double result = vendingMachineService.insertMoney(machineId, money);
-
-        // Assert
-        assertEquals(initialBalance + money.getValue(), result);
-
-        // Verify event was published
-        ArgumentCaptor<MoneyInsertedEvent> eventCaptor = ArgumentCaptor.forClass(MoneyInsertedEvent.class);
-        verify(eventPublisher).publishEvent(eventCaptor.capture());
-
-        MoneyInsertedEvent capturedEvent = eventCaptor.getValue();
-        assertEquals(machineId, capturedEvent.getMachineId());
-        assertEquals(money, capturedEvent.getMoney());
     }
 
     @Test

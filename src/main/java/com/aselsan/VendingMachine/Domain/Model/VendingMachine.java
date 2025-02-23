@@ -4,17 +4,13 @@ import com.aselsan.VendingMachine.Domain.Annotation.AggregateRoot;
 import com.aselsan.VendingMachine.Exception.BalanceNotEnoughException;
 import com.aselsan.VendingMachine.Exception.ProductNotFoundException;
 import com.aselsan.VendingMachine.Exception.VendingMachineOutOfOrderException;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-//@NoArgsConstructor
-//@AllArgsConstructor
 @Builder
 @AggregateRoot(description = "Represents a vending machine that manages products and transactions")
 public class VendingMachine {
@@ -51,7 +47,7 @@ public class VendingMachine {
         return products.stream()
                 .filter(p -> p.getId().equals(productId))
                 .findFirst()
-                .orElseThrow(() -> new ProductNotFoundException("Product has unexpected errors"));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found"));
     }
 
     public Product dispenseProduct(Long productId) {

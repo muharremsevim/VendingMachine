@@ -9,15 +9,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MoneyInsertedEventHandlerTest {
 
     @Mock
     private VendingMachineService vendingMachineService;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private MoneyInsertedEventHandler eventHandler;
@@ -46,10 +51,10 @@ class MoneyInsertedEventHandlerTest {
         MoneyInsertedEvent event = new MoneyInsertedEvent(this, machineId, money);
 
         when(vendingMachineService.insertMoney(machineId, money))
-            .thenThrow(new VendingMachineNotFoundException(machineId));
+                .thenThrow(new VendingMachineNotFoundException(machineId));
 
         // Act & Assert
-        assertThrows(VendingMachineNotFoundException.class, 
-            () -> eventHandler.handleMoneyInserted(event));
+        assertThrows(VendingMachineNotFoundException.class,
+                () -> eventHandler.handleMoneyInserted(event));
     }
 } 

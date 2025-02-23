@@ -1,14 +1,15 @@
 package com.aselsan.VendingMachine.Application.EventHandler;
 
 import com.aselsan.VendingMachine.Application.Service.VendingMachineService;
-import com.aselsan.VendingMachine.Domain.Event.MoneyInsertedEvent;
-import com.aselsan.VendingMachine.Domain.Event.MoneyInsertedResponseEvent;
+import com.aselsan.VendingMachine.Domain.Event.RefundRequestedEvent;
+import com.aselsan.VendingMachine.Domain.Event.RefundResponseEvent;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -16,8 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @RequiredArgsConstructor
-public class MoneyInsertedEventHandler {
-    private final Logger logger = LoggerFactory.getLogger(MoneyInsertedEventHandler.class);
+public class RefundRequestedEventHandler {
+    private final Logger logger = LoggerFactory.getLogger(RefundRequestedEventHandler.class);
     private final VendingMachineService vendingMachineService;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -28,10 +29,11 @@ public class MoneyInsertedEventHandler {
     }
 
     @EventListener
-    public void handleMoneyInserted(MoneyInsertedEvent event) {
+    @Transactional
+    public void handleRefundRequested(RefundRequestedEvent event) {
         try {
-            Double balance = vendingMachineService.insertMoney(event.getMachineId(), event.getMoney());
-            eventPublisher.publishEvent(new MoneyInsertedResponseEvent(this, event.getMachineId(), balance));
+            Double balance = vendingMachineService.refund(event.getMachineId());
+            eventPublisher.publishEvent(new RefundResponseEvent(this, event.getMachineId(), balance));
         } catch (Exception e) {
             logger.error("Error processing money insertion for machine {}: {}",
                     event.getMachineId(),
@@ -42,7 +44,7 @@ public class MoneyInsertedEventHandler {
     }
 
     @EventListener
-    public void handleMoneyInsertedResponse(MoneyInsertedResponseEvent event) {
+    public void handleRefundResponse(RefundResponseEvent event) {
         if (!responseFutures.isEmpty()) {
             CompletableFuture<Double> future = responseFutures.remove(event.getMachineId());
             future.complete(event.getBalance());
