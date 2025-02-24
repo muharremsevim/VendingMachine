@@ -1,6 +1,8 @@
 target/
-.git
-.idea
+.git/
+.gitignore
+README.md
+.idea/
 *.iml
 *.log
 *.class
