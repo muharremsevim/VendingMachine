@@ -7,6 +7,7 @@ import com.aselsan.VendingMachine.Domain.Event.ProductPurchasedResponseEvent;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ProductPurchasedEventHandler {
     private final Logger logger = LoggerFactory.getLogger(ProductPurchasedEventHandler.class);
     private final VendingMachineService vendingMachineService;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final Map<Long, CompletableFuture<ProductDto>> responseFutures = new ConcurrentHashMap<>();
 
@@ -29,9 +31,10 @@ public class ProductPurchasedEventHandler {
 
     @EventListener
     @Transactional
-    public ProductDto handleProductPurchased(ProductPurchasedEvent event) {
+    public void handleProductPurchased(ProductPurchasedEvent event) {
         try {
-            return vendingMachineService.dispenseProduct(event.getMachineId(), event.getProductId());
+            ProductDto product = vendingMachineService.dispenseProduct(event.getMachineId(), event.getProductId());
+            eventPublisher.publishEvent(new ProductPurchasedResponseEvent(this, event.getMachineId(), product));
         } catch (Exception e) {
             logger.error("Error processing dispense product {} for machine {}: {}",
                     event.getProductId(),
